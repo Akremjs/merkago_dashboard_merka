@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'Merka BI — Merkago Dashboard',
-    'version': '19.0.2.6.0',
+    'name': 'Merka BI — Analytics for Odoo',
+    'version': '19.0.2.7.0',
     'category': 'Productivity/Dashboard',
-    'summary': 'Produit BI Odoo : KPI, graphiques, pivot, IA chat, TV, alertes, formules',
+    'summary': 'BI self-service: KPI, charts, pivot, multi-engine AI chat, TV, alerts, formulas',
     'description': """
 Merka BI (Merkago Dashboard Merka)
 =================================
@@ -17,8 +17,8 @@ Produit BI self-service pour Odoo :
     'website': 'https://www.merkago.net',
     'support': 'akremkhelifi07@gmail.com',
     'license': 'OPL-1',
-    'price': 399.0,
-    'currency': 'EUR',
+    'price': 260.0,
+    'currency': 'USD',
     'depends': [
         'base',
         'mail',
