@@ -6,7 +6,7 @@ Généré depuis `merkago_dashboard_merka` (17.0) via `build_versions.py`.
 
 | Élément | Changement |
 |---------|------------|
-| `__manifest__.py` | version `20.0.2.6.0` |
+| `__manifest__.py` | version `20.0.2.7.0` |
 | Vues XML | `<tree>` → `<list>` |
 | Form chatter | `<chatter/>` (remplace `oe_chatter`) |
 | `hooks.py` | `post_init_hook(env)` (plus `cr, registry`) |
