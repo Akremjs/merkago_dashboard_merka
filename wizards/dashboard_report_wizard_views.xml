@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_merka_dashboard_report_wizard_form" model="ir.ui.view">
+        <field name="name">merka.dashboard.report.wizard.form</field>
+        <field name="model">merka.dashboard.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Générer un rapport">
+                <group>
+                    <field name="dashboard_id"/>
+                    <field name="date_filter"/>
+                    <field name="include_charts"/>
+                    <field name="include_lists"/>
+                    <field name="send_email"/>
+                    <field name="partner_ids" widget="many2many_tags"
+                             invisible="not send_email"
+                             required="send_email"/>
+                </group>
+                <footer>
+                    <button name="action_generate" type="object" string="Générer le rapport"
+                            class="btn-primary"/>
+                    <button string="Annuler" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_merka_dashboard_report_wizard" model="ir.actions.act_window">
+        <field name="name">Générer un rapport</field>
+        <field name="res_model">merka.dashboard.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="action_merka_reports_hub" model="ir.actions.client">
+        <field name="name">Rapports Merka</field>
+        <field name="tag">merka_reports_action</field>
+        <field name="target">current</field>
+    </record>
+</odoo>

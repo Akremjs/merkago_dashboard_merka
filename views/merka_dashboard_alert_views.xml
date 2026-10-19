@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_merka_dashboard_alert_tree" model="ir.ui.view">
+        <field name="name">merka.dashboard.alert.tree</field>
+        <field name="model">merka.dashboard.alert</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="item_id"/>
+                <field name="operator"/>
+                <field name="threshold"/>
+                <field name="last_value"/>
+                <field name="last_triggered"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_merka_dashboard_alert_form" model="ir.ui.view">
+        <field name="name">merka.dashboard.alert.form</field>
+        <field name="model">merka.dashboard.alert</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="dashboard_id"/>
+                            <field name="item_id"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="operator"/>
+                            <field name="threshold"/>
+                            <field name="notify_user_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="mail_template_body"/>
+                        <field name="last_value" readonly="1"/>
+                        <field name="last_triggered" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_merka_dashboard_schedule_tree" model="ir.ui.view">
+        <field name="name">merka.dashboard.schedule.tree</field>
+        <field name="model">merka.dashboard.schedule</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="dashboard_id"/>
+                <field name="interval"/>
+                <field name="last_sent"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_merka_dashboard_schedule_form" model="ir.ui.view">
+        <field name="name">merka.dashboard.schedule.form</field>
+        <field name="model">merka.dashboard.schedule</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_send_now" type="object" string="Envoyer maintenant" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="dashboard_id"/>
+                        <field name="interval"/>
+                        <field name="partner_ids" widget="many2many_tags"/>
+                        <field name="last_sent" readonly="1"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_merka_dashboard_alert" model="ir.actions.act_window">
+        <field name="name">Alertes seuils</field>
+        <field name="res_model">merka.dashboard.alert</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_merka_dashboard_schedule" model="ir.actions.act_window">
+        <field name="name">Envois planifiés</field>
+        <field name="res_model">merka.dashboard.schedule</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

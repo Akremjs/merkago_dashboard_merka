@@ -1,0 +1,600 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="merkago_dashboard_merka.LayoutPad">
+    <div class="merka-layout-pad no-print" t-on-click.stop="">
+        <div class="merka-pad-row">
+            <button type="button" class="merka-pad-btn" title="Haut" t-on-click="() => this.props.onMove('up')">
+                <i class="fa fa-arrow-up"/>
+            </button>
+        </div>
+        <div class="merka-pad-row">
+            <button type="button" class="merka-pad-btn" title="Gauche" t-on-click="() => this.props.onMove('left')">
+                <i class="fa fa-arrow-left"/>
+            </button>
+            <button type="button" class="merka-pad-btn" title="Bas" t-on-click="() => this.props.onMove('down')">
+                <i class="fa fa-arrow-down"/>
+            </button>
+            <button type="button" class="merka-pad-btn" title="Droite" t-on-click="() => this.props.onMove('right')">
+                <i class="fa fa-arrow-right"/>
+            </button>
+        </div>
+        <div class="merka-pad-row merka-pad-resize">
+            <button type="button" class="merka-pad-btn" title="Réduire" t-on-click="() => this.props.onResize(-1)">−</button>
+            <span class="merka-pad-w" t-esc="props.widthLabel"/>
+            <button type="button" class="merka-pad-btn" title="Élargir" t-on-click="() => this.props.onResize(1)">+</button>
+        </div>
+    </div>
+</t>
+
+<t t-name="merkago_dashboard_merka.ChartCard">
+    <article class="merka-card merka-card-chart" t-att-data-item-id="props.item.id">
+        <header class="merka-card-head">
+            <div>
+                <h3 t-esc="props.item.name"/>
+                <p class="merka-card-sub">
+                    <t t-if="props.item.data and props.item.data.subtitle" t-esc="props.item.data.subtitle"/>
+                    <t t-if="chartType !== props.item.item_type"> · <t t-esc="chartType"/></t>
+                    <t t-if="props.item.note"> · <t t-esc="props.item.note"/></t>
+                </p>
+            </div>
+            <div class="merka-card-actions no-print" t-if="!props.editMode">
+                <button class="merka-icon-btn" title="Style" t-on-click="onSwitch"><i class="fa fa-exchange"/></button>
+                <button class="merka-icon-btn" title="Insight IA locale" t-on-click="onExplain"><i class="fa fa-magic"/></button>
+                <button class="merka-icon-btn" title="Discussion" t-on-click="onChat"><i class="fa fa-comments"/></button>
+                <button class="merka-icon-btn" title="PNG" t-on-click="onPng"><i class="fa fa-image"/></button>
+                <button class="merka-icon-btn" title="CSV" t-on-click="onCsv"><i class="fa fa-file-text-o"/></button>
+                <button class="merka-icon-btn" title="Données" t-on-click="onDrill"><i class="fa fa-external-link"/></button>
+            </div>
+        </header>
+        <div class="merka-chart-wrap">
+            <canvas t-ref="canvas"/>
+        </div>
+        <p class="merka-card-hint no-print" t-if="!props.editMode">Cliquez pour filtrer tout le tableau · recliquez pour retirer</p>
+        <MerkaLayoutPad t-if="props.editMode"
+                        widthLabel="props.widthLabel"
+                        onMove="props.onMove"
+                        onResize="props.onResize"/>
+    </article>
+</t>
+
+<t t-name="merkago_dashboard_merka.Sparkline">
+    <canvas class="merka-sparkline" t-ref="spark" height="36"/>
+</t>
+
+<t t-name="merkago_dashboard_merka.Dashboard">
+    <div class="o_merka_dashboard_shell" t-ref="root" t-att-class="shellClass"
+         t-att-dir="state.rtl ? 'rtl' : 'ltr'">
+        <!-- Toujours visible en mode TV (hors header) -->
+        <button t-if="state.tvMode and !state.storyMode" type="button"
+                class="merka-tv-exit-fab no-print"
+                t-on-click="onExitTv"
+                title="Quitter le mode TV">
+            <i class="fa fa-times"/>
+            <span>Quitter le mode TV</span>
+            <small>ou touche Échap</small>
+        </button>
+
+        <!-- Story mode overlay -->
+        <div t-if="state.storyMode" class="merka-story-overlay no-print">
+            <button type="button" class="merka-story-close" t-on-click="onToggleStory">
+                <i class="fa fa-times"/> Fermer
+            </button>
+            <button type="button" class="merka-story-nav is-prev" t-on-click="onStoryPrev">
+                <i class="fa fa-chevron-left"/>
+            </button>
+            <div class="merka-story-card" t-if="storySlide()">
+                <p class="merka-story-kicker">Story · <t t-esc="storyProgressLabel()"/> </p>
+                <h2 t-esc="storySlide().title"/>
+                <div class="merka-story-value">
+                    <t t-esc="formatNumber(storySlide().value)"/>
+                    <small t-if="storySlide().unit" t-esc="storySlide().unit"/>
+                </div>
+                <p class="merka-story-trend" t-if="storySlide().trend !== null and storySlide().trend !== undefined">
+                    Tendance <t t-esc="storyTrendLabel(storySlide())"/> %
+                </p>
+                <p class="merka-story-note" t-if="storySlide().note" t-esc="storySlide().note"/>
+                <div class="merka-story-dots">
+                    <t t-foreach="state.storySlides" t-as="s" t-key="s.id">
+                        <span t-att-class="{'is-on': s_index === state.storyIndex}"/>
+                    </t>
+                </div>
+            </div>
+            <button type="button" class="merka-story-nav is-next" t-on-click="onStoryNext">
+                <i class="fa fa-chevron-right"/>
+            </button>
+        </div>
+
+        <div t-if="state.sidebarOpen and !state.tvMode" class="merka-sidebar-backdrop no-print"
+             t-on-click="onCloseSidebar"/>
+
+        <aside class="merka-sidebar no-print" t-if="!state.tvMode" aria-label="Dashboards Merka"
+               t-att-class="{'is-open': state.sidebarOpen}">
+            <div class="merka-sidebar-brand">
+                <span class="merka-sidebar-logo">M</span>
+                <div>
+                    <strong>Merka BI</strong>
+                    <small>Analytics</small>
+                </div>
+                <button type="button" class="merka-sidebar-close" t-on-click="onCloseSidebar" title="Fermer">
+                    <i class="fa fa-times"/>
+                </button>
+            </div>
+            <nav class="merka-sidebar-nav">
+                <t t-foreach="state.nav" t-as="entry" t-key="entry.id or entry.pack_code">
+                    <button type="button" class="merka-nav-item"
+                            t-att-class="{'is-active': entry.active}"
+                            t-on-click="() => this.onSelectNav(entry)">
+                        <i t-att-class="'fa ' + (entry.icon or 'fa-th-large')"/>
+                        <span t-esc="entry.name"/>
+                    </button>
+                </t>
+            </nav>
+            <div class="merka-sidebar-foot">
+                <button type="button" class="merka-nav-item" t-on-click="onOpenAll">
+                    <i class="fa fa-th-list"/>
+                    <span>Rapports</span>
+                </button>
+                <button type="button" class="merka-nav-item" t-on-click="onOpenSettings">
+                    <i class="fa fa-cog"/>
+                    <span>Paramètres</span>
+                </button>
+            </div>
+        </aside>
+
+        <div class="merka-main">
+            <header class="merka-dash-hero" t-att-class="{'is-tv': state.tvMode}">
+                <div class="merka-dash-hero-main">
+                    <button t-if="!state.tvMode" type="button" class="merka-burger no-print"
+                            t-on-click="onToggleSidebar" title="Menu">
+                        <i class="fa fa-bars"/>
+                    </button>
+                    <p class="merka-eyebrow">Merka BI · Powered by Merkago</p>
+                    <h1>
+                        <t t-esc="state.name or 'Dashboard Merka'"/>
+                        <button t-if="!state.tvMode" type="button" class="merka-fav-btn no-print"
+                                t-att-class="{'is-on': state.isFavorite}"
+                                title="Favori" t-on-click="onToggleFavorite">
+                            <i t-att-class="state.isFavorite ? 'fa fa-star' : 'fa fa-star-o'"/>
+                        </button>
+                    </h1>
+                    <p class="merka-dash-meta">
+                        <span t-if="state.packCode" class="merka-pill" t-esc="state.packCode"/>
+                        <span t-if="state.isHome" class="merka-pill">Accueil</span>
+                        <span t-if="state.lastRefresh">Actualisé · <t t-esc="state.lastRefresh"/></span>
+                        <span t-if="state.refreshSeconds" class="merka-pill">Auto <t t-esc="state.refreshSeconds"/>s</span>
+                        <span t-if="state.streamEnabled" class="merka-pill" t-att-class="{'is-live': state.streamLive}">
+                            <i class="fa fa-bolt"/> Live
+                        </span>
+                        <span t-if="state.rtl" class="merka-pill">RTL</span>
+                        <span t-if="state.tvMode and state.tvRotate" class="merka-pill">Rotation TV</span>
+                    </p>
+                </div>
+                <div class="merka-dash-actions no-print" t-if="!state.tvMode">
+                    <button class="merka-btn merka-btn-ghost" t-on-click="onSetHome" title="Définir comme accueil">
+                        <i class="fa fa-home"/>
+                    </button>
+                    <button class="merka-btn merka-btn-ghost" t-on-click="onToggleEdit"
+                            t-att-class="{'is-on': state.editMode}">
+                        <i class="fa fa-arrows"/> Layout
+                    </button>
+                    <button class="merka-btn merka-btn-ghost" t-on-click="onCycleTheme">
+                        <i class="fa fa-paint-brush"/> Thème
+                    </button>
+                    <button class="merka-btn merka-btn-ghost" t-on-click="onToggleRtl"
+                            t-att-class="{'is-on': state.rtl}" title="Droite ↔ Gauche (RTL)">
+                        <i class="fa fa-exchange"/> RTL
+                    </button>
+                    <button class="merka-btn merka-btn-ghost" t-on-click="onSaveBookmark" title="Sauver la vue">
+                        <i class="fa fa-bookmark"/>
+                    </button>
+                    <button class="merka-btn merka-btn-ghost" t-on-click="onAiGenerate"
+                            t-att-class="{'is-on': state.aiChatOpen}"
+                            title="Discussion IA Merka">
+                        <i class="fa fa-magic"/> IA
+                    </button>
+                    <button class="merka-btn merka-btn-ghost" t-on-click="onOpenKpiWizard">
+                        <i class="fa fa-plus"/> KPI
+                    </button>
+                    <button class="merka-btn merka-btn-ghost" t-on-click="onToggleStory"
+                            t-att-class="{'is-on': state.storyMode}">
+                        <i class="fa fa-play-circle"/> Story
+                    </button>
+                    <button class="merka-btn merka-btn-ghost" t-on-click="onToggleTv">
+                        <i class="fa fa-desktop"/> TV
+                    </button>
+                    <button class="merka-btn merka-btn-ghost" t-on-click="onExportExcel">
+                        <i class="fa fa-file-excel-o"/> Excel
+                    </button>
+                    <button class="merka-btn merka-btn-ghost" t-on-click="onExportPdf">
+                        <i class="fa fa-file-pdf-o"/> PDF
+                    </button>
+                    <button class="merka-btn merka-btn-ghost" t-on-click="onRefresh" t-att-disabled="state.loading">
+                        <i class="fa fa-refresh"/> Actualiser
+                    </button>
+                </div>
+                <div class="merka-dash-hero-glow" aria-hidden="true"/>
+            </header>
+
+            <nav class="merka-date-bar no-print" t-if="!state.tvMode" aria-label="Filtre de période">
+                <span class="merka-date-label"><i class="fa fa-calendar"/> Période</span>
+                <div class="merka-date-chips">
+                    <t t-foreach="dateFilters" t-as="f" t-key="f.value">
+                        <button type="button" class="merka-chip"
+                                t-att-class="{'is-active': state.dateFilter === f.value}"
+                                t-on-click="() => this.onDateFilter(f.value)"
+                                t-esc="f.label"/>
+                    </t>
+                </div>
+                <div class="merka-date-custom" t-if="state.dateFilter === 'custom'">
+                    <input type="date" class="merka-input" t-att-value="state.dateFrom or ''"
+                           t-on-change="onDateFromChange"/>
+                    <span>→</span>
+                    <input type="date" class="merka-input" t-att-value="state.dateTo or ''"
+                           t-on-change="onDateToChange"/>
+                    <button class="merka-chip is-active" t-on-click="onApplyCustomDates">Appliquer</button>
+                </div>
+                <button type="button" class="merka-chip" t-att-class="{'is-active': state.showCompare}"
+                        t-on-click="onToggleCompare" title="Afficher la comparaison vs période précédente">
+                    <i class="fa fa-exchange"/> Comparer
+                </button>
+                <div t-if="state.crossFilter" class="merka-cross-chip">
+                    <span>
+                        <i class="fa fa-filter"/>
+                        <t t-esc="state.crossFilter.label"/>
+                    </span>
+                    <button type="button" class="merka-chip is-active" t-on-click="onClearCrossFilter">
+                        × Retirer
+                    </button>
+                </div>
+                <div class="merka-bookmarks" t-if="state.bookmarks and state.bookmarks.length">
+                    <span class="merka-date-label"><i class="fa fa-bookmark"/> Signets</span>
+                    <t t-foreach="state.bookmarks" t-as="bm" t-key="bm.id">
+                        <button type="button" class="merka-chip" t-on-click="() => this.onApplyBookmark(bm)"
+                                t-esc="bm.name"/>
+                        <button type="button" class="merka-chip merka-chip-x"
+                                t-on-click="() => this.onDeleteBookmark(bm)" title="Supprimer">×</button>
+                    </t>
+                </div>
+                <div class="merka-company-select" t-if="state.companies and state.companies.length > 1">
+                    <i class="fa fa-building-o"/>
+                    <select class="merka-input" t-att-value="state.companyId" t-on-change="onCompanyChange">
+                        <t t-foreach="state.companies" t-as="co" t-key="co.id">
+                            <option t-att-value="co.id" t-esc="co.name"/>
+                        </t>
+                    </select>
+                </div>
+                <div class="merka-refresh-chips">
+                    <span class="merka-date-label">Refresh</span>
+                    <t t-foreach="refreshOptions" t-as="r" t-key="r.value">
+                        <button type="button" class="merka-chip"
+                                t-att-class="{'is-active': state.refreshSeconds === r.value}"
+                                t-on-click="() => this.onSetRefresh(r.value)"
+                                t-esc="r.label"/>
+                    </t>
+                </div>
+            </nav>
+
+            <div t-if="state.editMode" class="merka-edit-hint no-print">
+                <i class="fa fa-hand-pointer-o"/> Mode layout : <b>glissez-déposez</b> les blocs,
+                ou utilisez <b>← → ↑ ↓</b> / <b>− +</b>, puis
+                <button type="button" class="merka-chip is-active" t-on-click="onSaveLayout">
+                    <i class="fa fa-save"/> Enregistrer
+                </button>
+            </div>
+
+            <div t-if="state.loading" class="merka-loading">
+                <div class="merka-spinner"/>
+                <span>Chargement des indicateurs…</span>
+            </div>
+
+            <t t-else="">
+                <section t-if="!state.items.length" class="merka-empty">
+                    <h2 t-if="!state.dashboardId">Dashboard introuvable</h2>
+                    <h2 t-else="">Aucun élément</h2>
+                    <p t-if="!state.dashboardId">
+                        Rechargez via le menu <b>Dashboard Merka</b>, ou cliquez ci-dessous.
+                    </p>
+                    <p t-else="">Créez un pack via l’assistant ou ajoutez des widgets.</p>
+                    <button type="button" class="merka-btn merka-btn-ghost" t-on-click="onReloadHome">
+                        <i class="fa fa-refresh"/> Charger le dashboard
+                    </button>
+                </section>
+
+                <section t-if="state.items.length" class="merka-section">
+                    <div class="merka-free-grid" t-att-class="{'is-editing': state.editMode}">
+                        <t t-foreach="sortedItems" t-as="item" t-key="item.id">
+                            <div class="merka-grid-cell"
+                                 t-att-class="cellClass(item)"
+                                 t-att-style="cellStyle(item)"
+                                 t-att-draggable="state.editMode ? 'true' : 'false'"
+                                 t-on-dragstart="(ev) => this.onDragStart(ev, item)"
+                                 t-on-dragover="onDragOver"
+                                 t-on-drop="(ev) => this.onDrop(ev, item)">
+
+                                <!-- KPI -->
+                                <t t-if="isTile(item)">
+                                    <article class="merka-kpi-card" t-att-class="kpiToneClass(item_index)"
+                                             t-on-click="() => this.onKpiClick(item)">
+                                        <div class="merka-kpi-top">
+                                            <span class="merka-kpi-label" t-esc="item.name"/>
+                                            <span class="merka-anomaly" t-if="item.data and item.data.anomaly"
+                                                  t-att-class="item.data.anomaly.direction === 'up' ? 'is-up' : 'is-down'"
+                                                  t-att-title="anomalyLabel(item)">
+                                                <i class="fa fa-exclamation-triangle"/>
+                                                <t t-esc="item.data.anomaly.pct"/>%
+                                            </span>
+                                            <span class="merka-trend" t-att-class="trendClass(item)"
+                                                  t-if="state.showCompare">
+                                                <i t-att-class="trendIcon(item)"/>
+                                                <t t-esc="trendLabel(item)"/>
+                                            </span>
+                                        </div>
+                                        <div class="merka-kpi-body">
+                                            <div class="merka-kpi-value">
+                                                <t t-esc="formatNumber(item.data and item.data.value)"/>
+                                                <small t-if="item.data and item.data.unit" t-esc="item.data.unit"/>
+                                            </div>
+                                            <div class="merka-kpi-side">
+                                                <MerkaSparkline
+                                                    t-if="item.data and item.data.sparkline and item.data.sparkline.length"
+                                                    values="item.data.sparkline"
+                                                    tone="kpiTone(item_index)"/>
+                                                <div class="merka-gauge" t-if="item.data and item.data.target"
+                                                     t-att-class="progressTone(item)"
+                                                     t-att-title="'Objectif ' + formatNumber(item.data.target)">
+                                                    <svg viewBox="0 0 36 36" class="merka-gauge-svg">
+                                                        <circle class="merka-gauge-bg" cx="18" cy="18" r="15.9"/>
+                                                        <circle class="merka-gauge-fg" cx="18" cy="18" r="15.9"
+                                                                t-att-style="gaugeStyle(item)"/>
+                                                    </svg>
+                                                    <span class="merka-gauge-pct" t-esc="progressPct(item) + '%'"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="merka-kpi-compare" t-if="state.showCompare and previousLabel(item)">
+                                            <t t-esc="previousLabel(item)"/>
+                                        </div>
+                                        <div class="merka-kpi-foot" t-if="item.data and item.data.target">
+                                            <div class="merka-progress" t-att-class="progressTone(item)">
+                                                <div class="merka-progress-bar" t-att-style="'width:' + progressPct(item) + '%'"/>
+                                            </div>
+                                            <span>Objectif <t t-esc="formatNumber(item.data.target)"/> · <t t-esc="progressPct(item)"/>%</span>
+                                        </div>
+                                        <p class="merka-kpi-note" t-if="item.note" t-esc="item.note"/>
+                                        <div class="merka-kpi-accent"/>
+                                        <MerkaLayoutPad t-if="state.editMode"
+                                                        widthLabel="widthLabel(item)"
+                                                        onMove="(dir) => this.onMoveWidget(item.id, dir)"
+                                                        onResize="(dir) => this.onResizeItem(item.id, dir)"/>
+                                    </article>
+                                </t>
+
+                                <!-- Chart -->
+                                <t t-elif="isChart(item)">
+                                    <MerkaChartCard
+                                        item="item"
+                                        displayType="displayType(item)"
+                                        editMode="state.editMode"
+                                        widthLabel="widthLabel(item)"
+                                        onOpen.bind="onOpenRecords"
+                                        onSwitch.bind="onSwitchLayout"
+                                        onExportPng.bind="onExportPng"
+                                        onExportCsv.bind="onExportCsv"
+                                        onExplain.bind="onExplain"
+                                        onChat.bind="onOpenChat"
+                                        onDrillPoint.bind="onDrillPoint"
+                                        onMove="(dir) => this.onMoveWidget(item.id, dir)"
+                                        onResize="(dir) => this.onResizeItem(item.id, dir)"/>
+                                </t>
+
+                                <!-- Tableau croisé -->
+                                <t t-elif="isPivot(item)">
+                                    <article class="merka-card merka-card-pivot">
+                                        <header class="merka-card-head">
+                                            <div>
+                                                <h3 t-esc="item.name"/>
+                                                <p class="merka-card-sub" t-if="item.data">
+                                                    <t t-esc="item.data.row_label"/> × <t t-esc="item.data.col_label"/>
+                                                </p>
+                                            </div>
+                                            <div class="merka-card-actions no-print" t-if="!state.editMode">
+                                                <button class="merka-chip is-active" t-on-click="() => this.onOpenRecords(item.id)">
+                                                    Voir données
+                                                </button>
+                                                <button class="merka-icon-btn" t-on-click="() => this.onExportCsv(item.id)">
+                                                    <i class="fa fa-file-text-o"/>
+                                                </button>
+                                            </div>
+                                        </header>
+                                        <div class="merka-table-wrap merka-pivot-wrap" t-if="item.data and !item.data.error">
+                                            <table class="merka-table merka-pivot-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="merka-pivot-corner" t-esc="item.data.row_label or ''"/>
+                                                        <t t-foreach="item.data.cols or []" t-as="col" t-key="col">
+                                                            <th t-esc="col"/>
+                                                        </t>
+                                                        <th class="merka-pivot-total">Total</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <t t-foreach="pivotRows(item)" t-as="prow" t-key="prow.label">
+                                                        <tr>
+                                                            <th class="merka-row-click"
+                                                                t-on-click="() => this.onPivotCellClick(item, prow.label, false)"
+                                                                t-esc="prow.label"/>
+                                                            <t t-foreach="prow.cells" t-as="cell" t-key="cell_index">
+                                                                <td class="merka-pivot-cell merka-row-click"
+                                                                    t-att-style="pivotHeatStyle(cell.intensity)"
+                                                                    t-on-click="() => this.onPivotCellClick(item, prow.label, cell.colLabel)"
+                                                                    t-esc="formatNumber(cell.value)"/>
+                                                            </t>
+                                                            <td class="merka-pivot-total" t-esc="formatNumber(prow.total)"/>
+                                                        </tr>
+                                                    </t>
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr>
+                                                        <th>Total</th>
+                                                        <t t-foreach="item.data.col_totals or []" t-as="ct" t-key="ct_index">
+                                                            <td class="merka-pivot-total" t-esc="formatNumber(ct)"/>
+                                                        </t>
+                                                        <td class="merka-pivot-grand" t-esc="formatNumber(item.data.grand_total)"/>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                        <p class="merka-card-hint" t-if="item.data and item.data.error" t-esc="item.data.error"/>
+                                        <MerkaLayoutPad t-if="state.editMode"
+                                                        widthLabel="widthLabel(item)"
+                                                        onMove="(dir) => this.onMoveWidget(item.id, dir)"
+                                                        onResize="(dir) => this.onResizeItem(item.id, dir)"/>
+                                    </article>
+                                </t>
+
+                                <!-- Liste -->
+                                <t t-else="">
+                                    <article class="merka-card merka-card-table">
+                                        <header class="merka-card-head">
+                                            <h3 t-esc="item.name"/>
+                                            <div class="merka-card-actions no-print" t-if="!state.editMode">
+                                                <button class="merka-chip is-active" t-on-click="() => this.onOpenRecords(item.id)">
+                                                    Voir tout
+                                                </button>
+                                                <button class="merka-icon-btn" t-on-click="() => this.onExportCsv(item.id)">
+                                                    <i class="fa fa-file-text-o"/>
+                                                </button>
+                                            </div>
+                                        </header>
+                                        <div class="merka-table-wrap">
+                                            <table class="merka-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Enregistrement</th>
+                                                        <t t-foreach="listColumns(item)" t-as="col" t-key="col">
+                                                            <th t-esc="col"/>
+                                                        </t>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <t t-foreach="item.data and item.data.records or []" t-as="rec" t-key="rec.id">
+                                                        <tr class="merka-row-click"
+                                                            t-on-click="() => this.onOpenListRecord(item.id, rec.id)">
+                                                            <td t-esc="rec.display_name or rec.name or rec.id"/>
+                                                            <t t-foreach="listColumns(item)" t-as="col" t-key="col">
+                                                                <td t-esc="cellValue(rec, col)"/>
+                                                            </t>
+                                                        </tr>
+                                                    </t>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <MerkaLayoutPad t-if="state.editMode"
+                                                        widthLabel="widthLabel(item)"
+                                                        onMove="(dir) => this.onMoveWidget(item.id, dir)"
+                                                        onResize="(dir) => this.onResizeItem(item.id, dir)"/>
+                                    </article>
+                                </t>
+                            </div>
+                        </t>
+                    </div>
+                    <div t-if="state.editMode" class="merka-edit-bar no-print">
+                        <button class="merka-btn merka-btn-ghost" t-on-click="onSaveLayout">
+                            <i class="fa fa-save"/> Enregistrer le layout
+                        </button>
+                        <button class="merka-btn merka-btn-ghost" t-on-click="onAutoPack">
+                            <i class="fa fa-th"/> Réorganiser auto
+                        </button>
+                        <button class="merka-btn merka-btn-ghost" t-on-click="onToggleEdit">
+                            Annuler
+                        </button>
+                    </div>
+                </section>
+            </t>
+        </div>
+
+        <!-- Chat IA (discussion) -->
+        <aside t-if="state.aiChatOpen" class="merka-ai-chat no-print" aria-label="Chat IA Merka">
+            <header class="merka-ai-chat-head">
+                <div>
+                    <h2><i class="fa fa-magic"/> Merka IA</h2>
+                    <p>
+                        <span class="merka-pill" t-esc="aiModeLabel"/>
+                        Discussion
+                    </p>
+                    <div class="merka-ai-mode-row" t-if="state.aiAllowUserChoice and state.aiModes and state.aiModes.length">
+                        <label class="merka-ai-mode-label" for="merka_ai_mode_select">Moteur</label>
+                        <select id="merka_ai_mode_select" class="merka-input merka-ai-mode-select"
+                                t-att-value="state.aiMode"
+                                t-att-disabled="state.aiBusy"
+                                t-on-change="onAiModeChange">
+                            <t t-foreach="state.aiModes" t-as="mode" t-key="mode.value">
+                                <option t-att-value="mode.value"
+                                        t-att-disabled="mode.ready === false"
+                                        t-esc="mode.label + (mode.ready === false ? ' (non configuré)' : '')"/>
+                            </t>
+                        </select>
+                    </div>
+                </div>
+                <div class="merka-ai-chat-head-actions">
+                    <button type="button" class="merka-icon-btn" title="Effacer" t-on-click="onAiChatClear"
+                            t-att-disabled="state.aiBusy">
+                        <i class="fa fa-trash-o"/>
+                    </button>
+                    <button type="button" class="merka-icon-btn" title="Fermer" t-on-click="onCloseAiChat">
+                        <i class="fa fa-times"/>
+                    </button>
+                </div>
+            </header>
+            <div class="merka-ai-chat-messages" t-ref="aiChatScroll">
+                <t t-foreach="state.aiMessages" t-as="msg" t-key="msg.id || msg_index">
+                    <div class="merka-ai-bubble" t-att-class="{'is-user': msg.role === 'user', 'is-bot': msg.role !== 'user'}">
+                        <div class="merka-ai-bubble-meta" t-if="msg.role !== 'user'">
+                            <span t-esc="msg.source === 'local' or !msg.source ? 'Local' : msg.source"/>
+                        </div>
+                        <div class="merka-ai-bubble-body">
+                            <t t-foreach="aiMessageLines(msg)" t-as="line" t-key="line_index">
+                                <p t-esc="line"/>
+                            </t>
+                        </div>
+                        <div class="merka-ai-bubble-actions"
+                             t-if="msg.actions and msg.actions.length and msg.role !== 'user'">
+                            <t t-foreach="msg.actions" t-as="act" t-key="act.id || act_index">
+                                <button type="button" class="merka-chip"
+                                        t-att-disabled="state.aiBusy"
+                                        t-on-click="() => this.onAiPanelAction(act)"
+                                        t-esc="act.label"/>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+                <div t-if="state.aiBusy" class="merka-ai-bubble is-bot is-typing">
+                    <p>Analyse en cours…</p>
+                </div>
+            </div>
+            <div class="merka-ai-chat-suggestions" t-if="state.aiSuggestions and state.aiSuggestions.length">
+                <t t-foreach="state.aiSuggestions" t-as="sug" t-key="sug">
+                    <button type="button" class="merka-chip"
+                            t-att-disabled="state.aiBusy"
+                            t-on-click="() => this.onAiSuggestion(sug)"
+                            t-esc="sug"/>
+                </t>
+            </div>
+            <div class="merka-ai-chat-input">
+                <input type="text" class="merka-input"
+                       placeholder="Ex: où ça baisse ? · crée ventes · explique CA…"
+                       t-att-value="state.aiDraft"
+                       t-att-disabled="state.aiBusy"
+                       t-on-input="onAiDraftInput"
+                       t-on-keydown="onAiDraftKeydown"/>
+                <button type="button" class="merka-btn merka-btn-ghost is-on"
+                        t-on-click="onAiChatSend" t-att-disabled="state.aiBusy">
+                    <i class="fa fa-paper-plane"/>
+                </button>
+            </div>
+        </aside>
+    </div>
+</t>
+
+</templates>

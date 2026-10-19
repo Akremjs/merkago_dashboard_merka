@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="ir_cron_merka_dashboard_alerts" model="ir.cron">
+        <field name="name">Dashboard Merka: vérifier alertes</field>
+        <field name="model_id" ref="model_merka_dashboard_alert"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_check_alerts()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="True"/>
+    </record>
+
+    <record id="ir_cron_merka_dashboard_schedule" model="ir.cron">
+        <field name="name">Dashboard Merka: envois planifiés</field>
+        <field name="model_id" ref="model_merka_dashboard_schedule"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_send_scheduled()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="True"/>
+    </record>
+
+    <record id="ir_cron_merka_dashboard_history" model="ir.cron">
+        <field name="name">Dashboard Merka: snapshot historique KPI</field>
+        <field name="model_id" ref="model_merka_dashboard_history"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_snapshot_kpis()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="True"/>
+    </record>
+
+    <record id="ir_cron_merka_dashboard_cache_purge" model="ir.cron">
+        <field name="name">Dashboard Merka: purge cache expirée</field>
+        <field name="model_id" ref="model_merka_dashboard_cache"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_purge_expired()</field>
+        <field name="interval_number">6</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

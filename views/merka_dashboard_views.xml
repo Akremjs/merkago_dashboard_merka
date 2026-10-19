@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_merka_dashboard_list" model="ir.ui.view">
+        <field name="name">merka.dashboard.list</field>
+        <field name="model">merka.dashboard</field>
+        <field name="arch" type="xml">
+            <list>
+                <header>
+                    <button name="action_open_setup_wizard" type="object" string="Créer un tableau"
+                            class="btn-primary"
+                            groups="merkago_dashboard_merka.group_merka_dashboard_manager"/>
+                </header>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="pack_code"/>
+                <field name="item_count"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_merka_dashboard_form" model="ir.ui.view">
+        <field name="name">merka.dashboard.form</field>
+        <field name="model">merka.dashboard</field>
+        <field name="arch" type="xml">
+            <form string="Tableau de bord">
+                <header>
+                    <button name="action_open_dashboard" type="object" string="Ouvrir" class="btn-primary"/>
+                    <button name="action_open_report_wizard" type="object" string="Générer rapport"/>
+                    <button name="action_open_tv_mode" type="object" string="Mode TV"/>
+                    <button name="action_toggle_favorite" type="object" string="Favori"/>
+                    <button name="action_duplicate_dashboard" type="object" string="Dupliquer"
+                            groups="merkago_dashboard_merka.group_merka_dashboard_manager"/>
+                    <button name="action_open_kpi_wizard" type="object" string="Nouveau KPI"
+                            class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nom du tableau de bord"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="pack_code"/>
+                            <field name="sequence"/>
+                            <field name="is_favorite"/>
+                            <field name="theme_override"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="menu_id" readonly="1"/>
+                            <field name="item_count"/>
+                            <field name="color" widget="color_picker"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Éléments" name="items">
+                            <field name="item_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="item_type"/>
+                                    <field name="model_id"/>
+                                    <field name="aggregation"/>
+                                    <field name="date_filter"/>
+                                    <field name="layout_w"/>
+                                    <field name="layout_h"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Accès" name="access"
+                              groups="merkago_dashboard_merka.group_merka_dashboard_manager">
+                            <group>
+                                <field name="group_ids" widget="many2many_tags"/>
+                                <field name="user_ids" widget="many2many_tags"/>
+                            </group>
+                        </page>
+                        <page string="Alertes" name="alerts"
+                              groups="merkago_dashboard_merka.group_merka_dashboard_manager">
+                            <field name="alert_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="item_id"/>
+                                    <field name="operator"/>
+                                    <field name="threshold"/>
+                                    <field name="notify_user_ids" widget="many2many_tags"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Envois planifiés" name="schedules"
+                              groups="merkago_dashboard_merka.group_merka_dashboard_manager">
+                            <field name="schedule_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="interval"/>
+                                    <field name="partner_ids" widget="many2many_tags"/>
+                                    <field name="last_sent"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Description" name="desc">
+                            <field name="description" placeholder="Description métier…"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_merka_dashboard_kanban" model="ir.ui.view">
+        <field name="name">merka.dashboard.kanban</field>
+        <field name="model">merka.dashboard</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile" create="1">
+                <field name="name"/>
+                <field name="pack_code"/>
+                <field name="item_count"/>
+                <field name="color"/>
+                <field name="is_favorite"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card" t-attf-style="border-left: 4px solid #{kanban_getcolor(record.color.raw_value)}; cursor:pointer;">
+                            <a type="object" name="action_open_dashboard" class="o_kanban_full_width text-decoration-none text-reset">
+                                <div class="o_kanban_record_top mb-2">
+                                    <strong class="o_kanban_record_title"><field name="name"/></strong>
+                                    <span t-if="record.is_favorite.raw_value" class="fa fa-star text-warning"/>
+                                </div>
+                                <div class="text-muted">
+                                    <field name="pack_code"/> · <field name="item_count"/> éléments
+                                </div>
+                                <div class="mt-3">
+                                    <span class="btn btn-primary btn-sm">Ouvrir le dashboard</span>
+                                </div>
+                            </a>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="action_merka_dashboard" model="ir.actions.act_window">
+        <field name="name">Mes tableaux de bord</field>
+        <field name="res_model">merka.dashboard</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{'search_default_pack_modules': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucun tableau de bord
+            </p>
+            <p>
+                Cliquez sur une carte pour ouvrir le dashboard, ou créez-en un via l’assistant.
+            </p>
+        </field>
+    </record>
+
+    <record id="view_merka_dashboard_search" model="ir.ui.view">
+        <field name="name">merka.dashboard.search</field>
+        <field name="model">merka.dashboard</field>
+        <field name="arch" type="xml">
+            <search string="Tableaux de bord">
+                <field name="name"/>
+                <field name="pack_code"/>
+                <filter string="Favoris" name="favorites" domain="[('is_favorite', '=', True)]"/>
+                <filter string="Modules (Ventes, CRM…)" name="pack_modules"
+                        domain="[('pack_code', '!=', 'custom')]"/>
+                <separator/>
+                <filter string="Ventes" name="pack_sales" domain="[('pack_code', '=', 'sales')]"/>
+                <filter string="CRM" name="pack_crm" domain="[('pack_code', '=', 'crm')]"/>
+                <filter string="Achats" name="pack_purchase" domain="[('pack_code', '=', 'purchase')]"/>
+                <filter string="Comptabilité" name="pack_accounting" domain="[('pack_code', '=', 'accounting')]"/>
+                <filter string="Inventaire" name="pack_inventory" domain="[('pack_code', '=', 'inventory')]"/>
+                <group expand="0" string="Grouper par">
+                    <filter string="Module" name="group_pack" context="{'group_by': 'pack_code'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

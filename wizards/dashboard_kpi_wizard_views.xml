@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_merka_dashboard_kpi_wizard_form" model="ir.ui.view">
+        <field name="name">merka.dashboard.kpi.wizard.form</field>
+        <field name="model">merka.dashboard.kpi.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Nouveau KPI">
+                <field name="step" invisible="1"/>
+                <div class="alert alert-info" role="status">
+                    Assistant en 3 étapes :
+                    <b>1. Tableau</b> → <b>2. Source</b> → <b>3. Affichage</b>
+                    (étape actuelle : <field name="step" class="oe_inline" readonly="1"/>)
+                </div>
+
+                <group invisible="step != '1'" string="Étape 1 — Quel tableau ?">
+                    <field name="dashboard_id"/>
+                </group>
+
+                <group invisible="step != '2'" string="Étape 2 — D’où viennent les données ?">
+                    <field name="model_id" options="{'no_create': True}"/>
+                    <field name="aggregation"/>
+                    <field name="measure_field_id" invisible="aggregation == 'count'"/>
+                    <field name="date_field_id"/>
+                    <field name="domain" placeholder="[('state', '=', 'sale')]"/>
+                    <field name="date_filter"/>
+                </group>
+
+                <group invisible="step != '3'" string="Étape 3 — Comment l’afficher ?">
+                    <field name="name" placeholder="Ex: Chiffre d'affaires"/>
+                    <field name="code" placeholder="Ex: ca"/>
+                    <field name="item_type"/>
+                    <field name="groupby_field_id" invisible="item_type == 'tile'"/>
+                    <field name="col_groupby_field_id" invisible="item_type != 'pivot'"/>
+                    <field name="unit_label"/>
+                    <field name="target_value"/>
+                    <field name="add_to_dictionary"/>
+                </group>
+
+                <footer>
+                    <button name="action_back" type="object" string="Retour"
+                            class="btn-secondary" invisible="step == '1'"/>
+                    <button name="action_next" type="object" string="Suivant"
+                            class="btn-primary" invisible="step == '3'"/>
+                    <button name="action_create" type="object" string="Créer le KPI"
+                            class="btn-primary" invisible="step != '3'"/>
+                    <button string="Annuler" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_merka_dashboard_kpi_wizard" model="ir.actions.act_window">
+        <field name="name">Nouveau KPI</field>
+        <field name="res_model">merka.dashboard.kpi.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>
