@@ -1,16 +1,12 @@
-# Merka BI — Analytics for Odoo
+# Merka BI — Odoo Apps repository
 
-Self-service BI for Odoo — [merkago.net](https://www.merkago.net)
+Structure required by [Odoo Apps](https://apps.odoo.com):
 
-| Branch | Odoo | Version | Price |
-|--------|------|---------|-------|
-| `17.0` | 17 | 17.0.2.7.0 | 260 USD |
-| `18.0` | 18 | 18.0.2.7.0 | 260 USD |
-| `19.0` | 19 | 19.0.2.7.0 | 260 USD |
-| `20.0` | 20 | 20.0.2.7.0 | 260 USD |
+```
+merkago_dashboard_merka/   ← technical name (one app folder at repo root)
+```
 
-## Features
-KPI · Charts · Pivot · Cross-filter · Formulas · SQL · Alerts · TV/Story · Multi-engine AI chat · Report hub
+Branch `17.0` targets Odoo series **17.0**.
 
-## Author
-AKREM.KHELIFI · akremkhelifi07@gmail.com · OPL-1
+Submit URL example:
+`ssh://git@github.com/Akremjs/merkago_dashboard_merka.git#17.0`
