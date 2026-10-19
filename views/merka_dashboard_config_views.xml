@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_merka_dashboard_config_form" model="ir.ui.view">
+        <field name="name">merka.dashboard.config.form</field>
+        <field name="model">merka.dashboard.config</field>
+        <field name="arch" type="xml">
+            <form string="Configuration" create="0" delete="0">
+                <header>
+                    <button name="action_resync_packs" type="object"
+                            string="Resynchroniser les packs"
+                            class="btn-primary"
+                            groups="merkago_dashboard_merka.group_merka_dashboard_manager"/>
+                    <button name="action_backfill_history" type="object"
+                            string="Backfill historique 14j"
+                            class="btn-secondary"
+                            groups="merkago_dashboard_merka.group_merka_dashboard_manager"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Général">
+                            <field name="name"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="default_theme"/>
+                            <field name="default_refresh_seconds"/>
+                            <field name="allow_sql_kpi"/>
+                            <field name="auto_backup_exports"/>
+                            <field name="cache_ttl_seconds"/>
+                            <field name="history_enabled"/>
+                            <field name="stream_enabled"/>
+                            <field name="force_rtl"/>
+                            <field name="anomaly_threshold_pct"/>
+                        </group>
+                        <group string="Détection des apps">
+                            <field name="auto_detect_modules"/>
+                            <field name="last_auto_setup"/>
+                        </group>
+                        <group string="Intelligence artificielle">
+                            <field name="ai_enabled"/>
+                            <field name="ai_allow_user_choice"/>
+                            <field name="ai_provider"/>
+                            <field name="ai_multi_generate"/>
+                            <field name="ai_api_key" password="True"/>
+                            <field name="ai_endpoint"/>
+                        </group>
+                        <group string="Environnement OpenAI">
+                            <field name="ai_openai_key" password="True"/>
+                            <field name="ai_openai_endpoint"/>
+                            <field name="ai_openai_model"/>
+                        </group>
+                        <group string="Environnement Azure">
+                            <field name="ai_azure_key" password="True"/>
+                            <field name="ai_azure_endpoint"/>
+                        </group>
+                        <group string="Environnement Custom (Ollama, Mistral, proxy…)">
+                            <field name="ai_custom_label"/>
+                            <field name="ai_custom_key" password="True"/>
+                            <field name="ai_custom_endpoint"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-info" role="alert">
+                        <b>À la première installation</b>, Merka détecte les apps Odoo présentes
+                        (Ventes, CRM, Stock, Achats…) et crée les dashboards + indicateurs automatiquement.
+                        Si vous installez une nouvelle app plus tard, le pack correspondant est ajouté.
+                    </div>
+                    <div class="alert alert-warning" role="alert">
+                        Préparez les clés / endpoints ci-dessus, activez l’IA cloud, puis laissez
+                        chaque utilisateur choisir Local / Auto / OpenAI / Azure / Custom dans le chat.
+                        Aucune donnée métier ne doit être transmise sans validation DPO / DSI.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_merka_dashboard_export_list" model="ir.ui.view">
+        <field name="name">merka.dashboard.export.list</field>
+        <field name="model">merka.dashboard.export</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="create_date"/>
+                <field name="name"/>
+                <field name="dashboard_id"/>
+                <field name="export_type"/>
+                <field name="attachment_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_merka_dashboard_config" model="ir.actions.act_window">
+        <field name="name">Configuration</field>
+        <field name="res_model">merka.dashboard.config</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+        <field name="res_id" ref="merka_dashboard_config_default"/>
+    </record>
+
+    <record id="action_merka_dashboard_export" model="ir.actions.act_window">
+        <field name="name">Historique exports</field>
+        <field name="res_model">merka.dashboard.export</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="merka_dashboard_config_default" model="merka.dashboard.config">
+        <field name="name">Configuration Dashboard Merka</field>
+        <field name="company_id" ref="base.main_company"/>
+        <field name="ai_enabled" eval="False"/>
+        <field name="ai_allow_user_choice" eval="True"/>
+        <field name="ai_provider">none</field>
+        <field name="ai_openai_endpoint">https://api.openai.com/v1/chat/completions</field>
+        <field name="ai_openai_model">gpt-4o-mini</field>
+        <field name="ai_custom_label">Custom</field>
+        <field name="default_theme">dark</field>
+        <field name="default_refresh_seconds">0</field>
+        <field name="allow_sql_kpi" eval="False"/>
+        <field name="auto_backup_exports" eval="True"/>
+        <field name="auto_detect_modules" eval="True"/>
+    </record>
+</odoo>

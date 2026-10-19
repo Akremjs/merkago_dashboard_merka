@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="merkago_dashboard_merka.ReportsHub">
+    <div class="o_merka_dashboard_shell theme-dark has-sidebar merka-reports-shell" t-ref="root">
+        <aside class="merka-sidebar no-print">
+            <div class="merka-sidebar-brand">
+                <span class="merka-sidebar-logo">M</span>
+                <div>
+                    <strong>Merka</strong>
+                    <small>Rapports</small>
+                </div>
+            </div>
+            <nav class="merka-sidebar-nav">
+                <button type="button" class="merka-nav-item is-active">
+                    <i class="fa fa-file-text-o"/>
+                    <span>Hub rapports</span>
+                </button>
+                <button type="button" class="merka-nav-item" t-on-click="onOpenDashboards">
+                    <i class="fa fa-th-large"/>
+                    <span>Tous les tableaux</span>
+                </button>
+                <button type="button" class="merka-nav-item" t-on-click="onOpenExports">
+                    <i class="fa fa-history"/>
+                    <span>Historique</span>
+                </button>
+                <button type="button" class="merka-nav-item" t-on-click="onOpenSchedules">
+                    <i class="fa fa-calendar"/>
+                    <span>Envois planifiés</span>
+                </button>
+            </nav>
+            <div class="merka-sidebar-foot">
+                <button type="button" class="merka-nav-item" t-on-click="onBackSales">
+                    <i class="fa fa-arrow-left"/>
+                    <span>Retour dashboard</span>
+                </button>
+            </div>
+        </aside>
+
+        <div class="merka-main">
+            <header class="merka-dash-hero">
+                <div class="merka-dash-hero-main">
+                    <p class="merka-eyebrow">Merkago Analytics</p>
+                    <h1>Centre de rapports</h1>
+                    <p class="merka-dash-meta">
+                        <span>Synthèses, exports CSV/HTML, envois planifiés</span>
+                        <span t-if="state.generatedAt">· <t t-esc="state.generatedAt"/></span>
+                    </p>
+                </div>
+                <div class="merka-dash-actions">
+                    <button class="merka-btn merka-btn-ghost" t-on-click="onRefresh" t-att-disabled="state.loading">
+                        <i class="fa fa-refresh"/> Actualiser
+                    </button>
+                </div>
+                <div class="merka-dash-hero-glow" aria-hidden="true"/>
+            </header>
+
+            <div t-if="state.loading" class="merka-loading">
+                <div class="merka-spinner"/>
+                <span>Chargement des rapports…</span>
+            </div>
+
+            <t t-else="">
+                <section class="merka-section">
+                    <div class="merka-reports-toolbar">
+                        <span class="merka-date-label">Filtrer</span>
+                        <button type="button" class="merka-chip"
+                                t-att-class="{'is-active': !state.packFilter}"
+                                t-on-click="() => this.onFilterPack(false)">Tous</button>
+                        <t t-foreach="packFilters" t-as="p" t-key="p">
+                            <button type="button" class="merka-chip"
+                                    t-att-class="{'is-active': state.packFilter === p}"
+                                    t-on-click="() => this.onFilterPack(p)"
+                                    t-esc="p"/>
+                        </t>
+                    </div>
+                </section>
+
+                <section class="merka-section">
+                    <div class="merka-reports-grid">
+                        <t t-foreach="filteredCards" t-as="card" t-key="card.id">
+                            <article class="merka-report-card">
+                                <header class="merka-report-card-head">
+                                    <div>
+                                        <span class="merka-pill" t-esc="card.pack_code or 'custom'"/>
+                                        <h3 t-esc="card.name"/>
+                                    </div>
+                                    <span t-if="card.is_favorite" class="fa fa-star merka-star"/>
+                                </header>
+                                <div class="merka-report-kpis">
+                                    <t t-foreach="card.tiles or []" t-as="tile" t-key="tile.id">
+                                        <div class="merka-report-kpi">
+                                            <span t-esc="tile.name"/>
+                                            <strong>
+                                                <t t-esc="formatNumber(tile.value)"/>
+                                                <small t-esc="tile.unit"/>
+                                            </strong>
+                                        </div>
+                                    </t>
+                                    <p t-if="!(card.tiles and card.tiles.length)" class="merka-muted">
+                                        <t t-esc="card.item_count"/> indicateurs
+                                    </p>
+                                </div>
+                                <footer class="merka-report-actions">
+                                    <button class="merka-chip is-active" t-on-click="() => this.onOpenDash(card.id)">
+                                        Ouvrir
+                                    </button>
+                                    <button class="merka-chip" t-on-click="() => this.onDownloadHtml(card.id)">
+                                        <i class="fa fa-file-code-o"/> HTML
+                                    </button>
+                                    <button class="merka-chip" t-on-click="() => this.onDownloadCsv(card.id)">
+                                        <i class="fa fa-file-text-o"/> CSV
+                                    </button>
+                                    <button class="merka-chip" t-on-click="() => this.onWizard(card.id)">
+                                        <i class="fa fa-envelope-o"/> Envoyer
+                                    </button>
+                                </footer>
+                                <p class="merka-report-meta" t-if="card.last_export">
+                                    Dernier export · <t t-esc="card.last_export_type"/> · <t t-esc="formatDate(card.last_export)"/>
+                                </p>
+                            </article>
+                        </t>
+                    </div>
+                </section>
+
+                <section class="merka-section merka-reports-bottom">
+                    <article class="merka-card">
+                        <header class="merka-card-head"><h3>Exports récents</h3></header>
+                        <div class="merka-table-wrap">
+                            <table class="merka-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Tableau</th>
+                                        <th>Type</th>
+                                        <th>Date</th>
+                                        <th/>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.recentExports" t-as="ex" t-key="ex.id">
+                                        <tr>
+                                            <td t-esc="ex.name"/>
+                                            <td t-esc="ex.dashboard"/>
+                                            <td><span class="merka-pill" t-esc="ex.export_type"/></td>
+                                            <td t-esc="formatDate(ex.date)"/>
+                                            <td>
+                                                <a t-if="ex.attachment_id"
+                                                   t-att-href="'/web/content/' + ex.attachment_id + '?download=true'"
+                                                   class="merka-chip">Télécharger</a>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <tr t-if="!state.recentExports.length">
+                                        <td colspan="5" class="text-muted">Aucun export pour le moment</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </article>
+                    <article class="merka-card">
+                        <header class="merka-card-head"><h3>Envois planifiés</h3></header>
+                        <div class="merka-table-wrap">
+                            <table class="merka-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Tableau</th>
+                                        <th>Fréquence</th>
+                                        <th>Dernier envoi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.schedules" t-as="s" t-key="s.id">
+                                        <tr>
+                                            <td t-esc="s.name"/>
+                                            <td t-esc="s.dashboard"/>
+                                            <td t-esc="s.interval"/>
+                                            <td t-esc="formatDate(s.last_sent) or '—'"/>
+                                        </tr>
+                                    </t>
+                                    <tr t-if="!state.schedules.length">
+                                        <td colspan="4" class="text-muted">Aucun envoi planifié actif</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </article>
+                </section>
+            </t>
+        </div>
+    </div>
+</t>
+
+</templates>

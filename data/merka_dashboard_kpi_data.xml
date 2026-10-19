@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Pack Ventes — modèles résolus si sale installé ; sinon ignorés à l'usage -->
+    <record id="kpi_sales_orders_count" model="merka.dashboard.kpi">
+        <field name="name">Commandes de vente</field>
+        <field name="code">sales_orders_count</field>
+        <field name="pack_code">sales</field>
+        <field name="sequence">10</field>
+        <field name="definition">Nombre de commandes de vente confirmées.</field>
+        <field name="aggregation">count</field>
+        <field name="domain">[('state', 'in', ['sale', 'done'])]</field>
+        <field name="audience">Direction commerciale</field>
+        <field name="refresh_hint">Quotidien</field>
+    </record>
+    <record id="kpi_crm_won" model="merka.dashboard.kpi">
+        <field name="name">Opportunités gagnées</field>
+        <field name="code">crm_won</field>
+        <field name="pack_code">crm</field>
+        <field name="sequence">10</field>
+        <field name="definition">Nombre d'opportunités marquées gagnées.</field>
+        <field name="aggregation">count</field>
+        <field name="domain">[('probability', '=', 100)]</field>
+        <field name="audience">Équipe commerciale</field>
+        <field name="refresh_hint">Quotidien</field>
+    </record>
+    <record id="kpi_account_unpaid" model="merka.dashboard.kpi">
+        <field name="name">Factures clients impayées</field>
+        <field name="code">account_unpaid</field>
+        <field name="pack_code">accounting</field>
+        <field name="sequence">10</field>
+        <field name="definition">Factures clients non payées.</field>
+        <field name="aggregation">count</field>
+        <field name="domain">[('move_type', '=', 'out_invoice'), ('payment_state', 'in', ['not_paid', 'partial'])]</field>
+        <field name="audience">DAF</field>
+        <field name="refresh_hint">Quotidien</field>
+    </record>
+    <record id="kpi_stock_moves" model="merka.dashboard.kpi">
+        <field name="name">Mouvements de stock</field>
+        <field name="code">stock_moves</field>
+        <field name="pack_code">inventory</field>
+        <field name="sequence">10</field>
+        <field name="definition">Nombre de mouvements de stock terminés.</field>
+        <field name="aggregation">count</field>
+        <field name="domain">[('state', '=', 'done')]</field>
+        <field name="audience">Logistique</field>
+        <field name="refresh_hint">Quotidien</field>
+    </record>
+    <record id="kpi_sales_panier_moyen" model="merka.dashboard.kpi">
+        <field name="name">Panier moyen</field>
+        <field name="code">sales_panier_moyen</field>
+        <field name="pack_code">sales</field>
+        <field name="sequence">20</field>
+        <field name="definition">CA / nombre de commandes.</field>
+        <field name="aggregation">formula</field>
+        <field name="formula">safe_div({ca}, {commandes})</field>
+        <field name="formula_unit">€</field>
+        <field name="audience">Direction commerciale</field>
+        <field name="refresh_hint">Quotidien</field>
+    </record>
+    <record id="kpi_sales_taux_conversion" model="merka.dashboard.kpi">
+        <field name="name">Taux de conversion devis</field>
+        <field name="code">sales_taux_conversion</field>
+        <field name="pack_code">sales</field>
+        <field name="sequence">30</field>
+        <field name="definition">Commandes confirmées / (commandes + devis) × 100.</field>
+        <field name="aggregation">formula</field>
+        <field name="formula">pct({commandes}, {commandes} + {devis})</field>
+        <field name="formula_unit">%</field>
+        <field name="audience">Direction commerciale</field>
+        <field name="refresh_hint">Quotidien</field>
+    </record>
+</odoo>
