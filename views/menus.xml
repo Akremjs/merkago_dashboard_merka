@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+      Clic app = dashboard modules (Ventes + sidebar CRM/Stock/…).
+      Pas de sous-menus par dashboard : navigation dans la sidebar OWL.
+    -->
+    <!-- Ouvre le 1er pack détecté selon les apps installées chez le client -->
+    <record id="action_open_home_dashboard" model="ir.actions.server">
+        <field name="name">Merka BI</field>
+        <field name="model_id" ref="model_merka_dashboard"/>
+        <field name="state">code</field>
+        <field name="code">action = env['merka.dashboard'].action_open_home_dashboard()</field>
+    </record>
+
+    <menuitem id="menu_merka_dashboard_root"
+              name="Merka BI"
+              action="action_open_home_dashboard"
+              sequence="25"
+              web_icon="merkago_dashboard_merka,static/description/icon.png"
+              groups="merkago_dashboard_merka.group_merka_dashboard_restricted"/>
+
+    <menuitem id="menu_merka_dashboard_boards"
+              name="Tous les tableaux"
+              parent="menu_merka_dashboard_root"
+              action="action_merka_dashboard"
+              sequence="1"/>
+
+    <menuitem id="menu_merka_dashboard_reports"
+              name="Rapports"
+              parent="menu_merka_dashboard_root"
+              action="action_merka_reports_hub"
+              sequence="5"/>
+
+    <menuitem id="menu_merka_dashboard_new_kpi"
+              name="Nouveau KPI"
+              parent="menu_merka_dashboard_root"
+              action="action_merka_dashboard_kpi_wizard"
+              sequence="8"
+              groups="merkago_dashboard_merka.group_merka_dashboard_user"/>
+
+    <menuitem id="menu_merka_dashboard_items"
+              name="Indicateurs"
+              parent="menu_merka_dashboard_root"
+              action="action_merka_dashboard_item"
+              sequence="86"
+              groups="merkago_dashboard_merka.group_merka_dashboard_manager"/>
+
+    <menuitem id="menu_merka_dashboard_config_root"
+              name="Configuration"
+              parent="menu_merka_dashboard_root"
+              sequence="90"
+              groups="merkago_dashboard_merka.group_merka_dashboard_manager"/>
+
+    <menuitem id="menu_merka_dashboard_kpi"
+              name="Dictionnaire d'indicateurs"
+              parent="menu_merka_dashboard_config_root"
+              action="action_merka_dashboard_kpi"
+              sequence="10"/>
+
+    <menuitem id="menu_merka_dashboard_settings"
+              name="Réglages"
+              parent="menu_merka_dashboard_config_root"
+              action="action_merka_dashboard_config"
+              sequence="20"/>
+
+    <menuitem id="menu_merka_dashboard_alerts"
+              name="Alertes seuils"
+              parent="menu_merka_dashboard_config_root"
+              action="action_merka_dashboard_alert"
+              sequence="25"/>
+
+    <menuitem id="menu_merka_dashboard_schedules"
+              name="Envois planifiés"
+              parent="menu_merka_dashboard_config_root"
+              action="action_merka_dashboard_schedule"
+              sequence="28"/>
+
+    <menuitem id="menu_merka_dashboard_exports"
+              name="Historique exports"
+              parent="menu_merka_dashboard_config_root"
+              action="action_merka_dashboard_export"
+              sequence="30"/>
+
+    <menuitem id="menu_merka_dashboard_import"
+              name="Importer un tableau"
+              parent="menu_merka_dashboard_config_root"
+              action="action_merka_dashboard_import_wizard"
+              sequence="40"
+              groups="merkago_dashboard_merka.group_merka_dashboard_manager"/>
+</odoo>

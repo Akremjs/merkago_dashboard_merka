@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_merka_dashboard_kpi_list" model="ir.ui.view">
+        <field name="name">merka.dashboard.kpi.list</field>
+        <field name="model">merka.dashboard.kpi</field>
+        <field name="arch" type="xml">
+            <tree>
+                <header>
+                    <button name="action_apply_to_dashboard" type="object"
+                            string="Ajouter aux dashboards" class="btn-secondary"/>
+                </header>
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="pack_code"/>
+                <field name="aggregation"/>
+                <field name="formula" optional="show"/>
+                <field name="auto_generated" optional="show"/>
+                <field name="audience"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_merka_dashboard_kpi_form" model="ir.ui.view">
+        <field name="name">merka.dashboard.kpi.form</field>
+        <field name="model">merka.dashboard.kpi</field>
+        <field name="arch" type="xml">
+            <form string="Indicateur">
+                <header>
+                    <button name="action_apply_to_dashboard" type="object"
+                            string="Ajouter au dashboard" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code" placeholder="ex: sales_panier_moyen"/>
+                            <field name="pack_code"/>
+                            <field name="sequence"/>
+                            <field name="auto_generated" readonly="1"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="model_id"/>
+                            <field name="aggregation"/>
+                            <field name="measure_field" invisible="aggregation == 'formula'"/>
+                            <field name="date_field" invisible="aggregation == 'formula'"/>
+                            <field name="audience"/>
+                            <field name="refresh_hint"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Formule" name="formula">
+                            <div class="alert alert-warning" role="status"
+                                 invisible="aggregation == 'formula'">
+                                Pour activer le calcul par formule, choisissez
+                                <b>Agrégation = Formule</b> (à droite), puis
+                                sélectionnez un <b>modèle</b> ou saisissez
+                                l’expression ci-dessous.
+                            </div>
+                            <group>
+                                <group>
+                                    <field name="formula_preset"
+                                             placeholder="Choisir un modèle…"/>
+                                    <field name="formula" widget="text"
+                                             placeholder="Ex: safe_div({ca}, {commandes})&#10;# → panier moyen"/>
+                                    <field name="formula_unit" placeholder="€ ou %"/>
+                                </group>
+                                <group string="Exemple rapide">
+                                    <div colspan="2" class="text-muted">
+                                        <p class="mb-1">
+                                            <b>Panier moyen</b> —
+                                            si <code>{ca}</code> = 12 000 et
+                                            <code>{commandes}</code> = 40 :
+                                        </p>
+                                        <p class="mb-1">
+                                            <code>safe_div({ca}, {commandes})</code>
+                                            → <b>300 €</b>
+                                        </p>
+                                        <p class="mb-0">
+                                            Les codes entre <code>{…}</code> doivent
+                                            correspondre aux codes des autres
+                                            indicateurs du <b>même dashboard</b>.
+                                        </p>
+                                    </div>
+                                </group>
+                            </group>
+                            <group string="Aide détaillée">
+                                <field name="formula_guide" nolabel="1" colspan="2"/>
+                            </group>
+                        </page>
+                        <page string="Définition" name="definition">
+                            <group>
+                                <field name="domain" invisible="aggregation == 'formula'"/>
+                                <field name="definition" placeholder="Description métier de l’indicateur…"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_merka_dashboard_kpi" model="ir.actions.act_window">
+        <field name="name">Dictionnaire d'indicateurs</field>
+        <field name="res_model">merka.dashboard.kpi</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

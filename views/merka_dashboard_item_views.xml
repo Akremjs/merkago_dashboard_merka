@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_merka_dashboard_item_list" model="ir.ui.view">
+        <field name="name">merka.dashboard.item.list</field>
+        <field name="model">merka.dashboard.item</field>
+        <field name="arch" type="xml">
+            <tree string="Indicateurs">
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="dashboard_id"/>
+                <field name="item_type"/>
+                <field name="data_source"/>
+                <field name="formula" optional="hide"/>
+                <field name="model_id"/>
+                <field name="aggregation"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_merka_dashboard_item_form" model="ir.ui.view">
+        <field name="name">merka.dashboard.item.form</field>
+        <field name="model">merka.dashboard.item</field>
+        <field name="arch" type="xml">
+            <form string="Indicateur">
+                <header>
+                    <button name="action_open_records" type="object" string="Voir les enregistrements"
+                            class="btn-secondary" invisible="data_source != 'odoo'"/>
+                    <button name="action_preview_formula" type="object" string="Tester la formule"
+                            class="btn-primary" invisible="data_source != 'formula'"/>
+                    <button name="action_open_chat" type="object" string="Discussion"
+                            class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code" placeholder="ex: ca, commandes, panier"/>
+                            <field name="dashboard_id"/>
+                            <field name="item_type"/>
+                            <field name="data_source"/>
+                            <field name="kpi_id"/>
+                            <field name="note" placeholder="Annotation visible sur le dashboard…"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group invisible="data_source != 'odoo'">
+                            <field name="model_id"/>
+                            <field name="measure_field_id"/>
+                            <field name="aggregation"/>
+                            <field name="groupby_field_id"/>
+                            <field name="col_groupby_field_id" invisible="item_type != 'pivot'"/>
+                            <field name="date_field_id"/>
+                            <field name="limit"/>
+                            <field name="sort"/>
+                        </group>
+                    </group>
+
+                    <notebook invisible="data_source != 'formula'">
+                        <page string="Formule" name="formula">
+                            <div class="alert alert-info" role="status">
+                                <b>En 3 étapes :</b>
+                                1) les autres tuiles ont un <b>code</b>
+                                (ex. <code>ca</code>, <code>commandes</code>) —
+                                2) choisissez un <b>modèle</b> ou écrivez
+                                <code>safe_div({ca}, {commandes})</code> —
+                                3) cliquez <b>Tester la formule</b>.
+                                Exemple : ca=12 000, commandes=40 → résultat
+                                <b>300 €</b>.
+                            </div>
+                            <group>
+                                <group>
+                                    <field name="formula_preset"/>
+                                    <field name="formula" widget="text"
+                                             placeholder="safe_div({ca}, {commandes})&#10;pct({commandes}, {commandes}+{devis})&#10;growth({ca}, {ca_n1})"/>
+                                    <field name="formula_decimals"/>
+                                    <field name="unit_label"/>
+                                    <field name="formula_preview"/>
+                                </group>
+                                <group string="Codes du tableau">
+                                    <field name="formula_codes_help" widget="text" nolabel="1"
+                                             placeholder="Les codes des autres indicateurs apparaissent ici"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Aide &amp; exemples" name="formula_help">
+                            <field name="formula_guide" nolabel="1" colspan="2"/>
+                        </page>
+                    </notebook>
+
+                    <group string="SQL" invisible="data_source != 'sql'">
+                        <field name="sql_query" placeholder="SELECT label, value FROM ..."/>
+                    </group>
+                    <group string="CSV" invisible="data_source != 'csv'">
+                        <field name="csv_data" placeholder="label,value&#10;A,10&#10;B,20"/>
+                    </group>
+                    <group string="Filtres" invisible="data_source == 'formula'">
+                        <field name="domain"/>
+                        <field name="date_filter"/>
+                        <field name="date_from" invisible="date_filter != 'custom'"/>
+                        <field name="date_to" invisible="date_filter != 'custom'"/>
+                    </group>
+                    <group string="Affichage">
+                        <field name="show_values"/>
+                        <field name="target_value"/>
+                        <field name="unit_label" invisible="data_source == 'formula'"/>
+                        <field name="currency_id"/>
+                        <field name="layout_x"/>
+                        <field name="layout_y"/>
+                        <field name="layout_w"/>
+                        <field name="layout_h"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_merka_dashboard_item" model="ir.actions.act_window">
+        <field name="name">Indicateurs</field>
+        <field name="res_model">merka.dashboard.item</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>
