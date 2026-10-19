@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_merka_dashboard_export_wizard_form" model="ir.ui.view">
+        <field name="name">merka.dashboard.export.wizard.form</field>
+        <field name="model">merka.dashboard.export.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Exporter un tableau de bord">
+                <group>
+                    <field name="dashboard_id"/>
+                    <field name="export_type"/>
+                    <field name="data_filename" invisible="not data_file"/>
+                    <field name="data_file" filename="data_filename" invisible="not data_file"/>
+                </group>
+                <footer>
+                    <button name="action_export" type="object" string="Exporter" class="btn-primary"
+                            invisible="data_file"/>
+                    <button string="Fermer" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_merka_dashboard_export_wizard" model="ir.actions.act_window">
+        <field name="name">Exporter</field>
+        <field name="res_model">merka.dashboard.export.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="model_merka_dashboard"/>
+        <field name="binding_view_types">form,tree</field>
+    </record>
+</odoo>
